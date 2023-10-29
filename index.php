@@ -12,15 +12,15 @@
     foreach ($bookFiles as $kay => $value) {
         $fileName = explode('.txt', $value)[0];
         $fileBase = explode(' ', $fileName)[0];
-        $fileLingua = substr($fileBase, -3);
-        $fileLingua = substr($fileBase, strrpos($fileBase, '_') + 1);
-        $fileId = substr($fileBase, 0, -4);
+        $lastUnderscoreIndex = strrpos($fileBase, '_');
+        $fileLingua = substr($fileBase, $lastUnderscoreIndex + 1);
+        $fileID = substr($fileBase, 0, strlen($fileBase) - strlen($fileLingua) - 1);
 
-        if (!@$bookIDArray[$fileId]) {
-            $bookIDArray[$fileId] = Array();
+        if (!@$bookIDArray[$fileID]) {
+            $bookIDArray[$fileID] = Array();
         }
 
-        array_push($bookIDArray[$fileId], $fileLingua);
+        array_push($bookIDArray[$fileID], $fileLingua);
     }
 
     $bookLinguasArray = max($bookIDArray);
@@ -28,15 +28,18 @@
     
     $fileNamesArray = Array();
     foreach($bookFiles as $value) {
-        if(strpos($value, $bookID) !== false) {
-            $lingua = substr(explode($bookID, $value)[1], 1, 3);
+        if (strpos($value, $bookID) !== false) {
+            $fileName = explode('.txt', $value)[0];
+            $fileBase = explode(' ', $fileName)[0];
+            $lastUnderscoreIndex = strrpos($fileBase, '_');
+            $lingua = substr($fileBase, $lastUnderscoreIndex + 1);
             $fileNamesArray[$lingua] = $value;
         }
     }
 
     $linguaCoversArray = Array();
     foreach ($bookLinguasArray as $lingua) {
-        if (file_exists($booksPath . '_covers/' . $lingua . '.png')){
+        if (file_exists($booksPath . 'covers/' . $lingua . '.png')){
             $linguaCoversArray[$lingua] = true;
         } else {
             $linguaCoversArray[$lingua] = false;
@@ -55,6 +58,7 @@
         <link rel="preconnect" href="https://fonts.googleapis.com">
         <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
         <link href="https://fonts.googleapis.com/css2?family=Open+Sans&display=swap" rel="stylesheet"></link>
+        <script type="text/javascript" src="print-bilingual-pdf/scripts/print_bilingual_pdf.js"></script>
     </head>
 
     <body>
@@ -122,6 +126,9 @@
     </body>
 </html>
 <script type="text/javascript">
+    const booksDir = 'books';
+    const coversDir = 'books/covers';
+    const illustrationsDir = 'books/illustrations';
 
     function updateLinguasCount () {
         let linguasCount = document.querySelectorAll('.lingua-checkbox').length;
@@ -205,36 +212,35 @@
                     resultFieldItem += '<div class="result-field-item-formats">';
 
                     let linguasArguments = `\'${allLinguasArray[i]}\', \'${allLinguasArray[j]}\'`;
-                    
+                    let lingua1 = allLinguasArray[i];
+                    let lingua2 = allLinguasArray[j];
 
                     allFormatsArray.forEach(format => {
                         let actualFileName = format.includes('pdf') ? fileName + '_' + format.split('pdf-')[1] : fileName;
-                        let fileExtention = format.includes('pdf') ? 'pdf' : format;
+                        let fileExtension = format.includes('pdf') ? 'pdf' : format;
                         let formatFunction = '';
 
-                        if (format === 'txt') {
+                        if (fileExtension === 'txt') {
                             formatFunction = 'saveTxt(' + linguasArguments + ');setTimeout(() => {updateFormatStatuses(this)}, 100);';
-                        } else if (format === 'fb2') {
+                        } else if (fileExtension === 'fb2') {
                             formatFunction = 'saveFb2(' + linguasArguments + ');setTimeout(() => {updateFormatStatuses(this)}, 100);';
-                        } else if (format === 'epub') {
+                        } else if (fileExtension === 'epub') {
                             formatFunction = 'saveEpub(' + linguasArguments + ');setTimeout(() => {updateFormatStatuses(this)}, 100);';
-                        } else if (format.includes('pdf')) {
-                            formatFunction = `openReadyBook(${linguasArguments}, `;
-                            formatFunction += format.includes('cols') ? `\'cols\')` : `\'rows\')`;
                         }
 
-
-                        let fullFileName = `${actualFileName}.${fileExtention}`;
+                        let fullFileName = `${actualFileName}.${fileExtension}`;
                         fullFileNamesArray += fullFileName + ';';
 
-                        resultFieldItem += '<div class="result-format result-format-absent result-format-' + allLinguasArray[i] + ' result-format-' + allLinguasArray[i] + '-' + allLinguasArray[j] + '"';
-                        resultFieldItem += ' onclick="' + formatFunction + '" title="' + fullFileName + '">';
-                        resultFieldItem += '<img class="result-format-reflection" src="img/reflection.svg">';
-
-                        resultFieldItem += '<p class="result-format-title">' + format + '</p>';
-
-                        resultFieldItem += '<img class="result-format-reflection result-format-reflection-right" src="img/reflection.svg">';
-                        resultFieldItem += '</div>';
+                        resultFieldItem += `<div class="result-format result-format-absent result-format-${lingua1}\
+                         result-format-${lingua1}-${lingua2} result-format-${fileExtension}"\
+                         langs="${lingua1}-${lingua2}"\
+                         onclick="${formatFunction}" title="${fullFileName}">\
+                        <img class="result-format-reflection" src="img/reflection.svg">\
+                        
+                        <p class="result-format-title">${format}</p>\
+                        
+                        <img class="result-format-reflection result-format-reflection-right" src="img/reflection.svg">\
+                        </div>`;
                         
                     });
 
@@ -259,19 +265,17 @@
     function updateFormatStatuses (format = undefined) {
         
         getFilesList('books/saved/').then(function() {
-                let savedFilesString = document.querySelector('.invisible-input-general').value;
-                let resultFormats = format !== undefined ? [format] : document.querySelectorAll('.result-format');
+            let savedFilesString = document.querySelector('.invisible-input-general').value;
+            let resultFormats = format !== undefined ? [format] : document.querySelectorAll('.result-format');
 
-                resultFormats.forEach((item) => {
-                    if (savedFilesString.includes(item.title)) {
-                        item.classList.remove('result-format-absent');
-                    } else {
-                        item.classList.add('result-format-absent');
-                    }
-                });
-
-            }
-        );
+            resultFormats.forEach((item) => {
+                if (savedFilesString.includes(item.title)) {
+                    item.classList.remove('result-format-absent');
+                } else {
+                    item.classList.add('result-format-absent');
+                }
+            });
+        });
     }
 
     function setLaunchHover () {
@@ -330,8 +334,6 @@
         getBookContent(linguaCheckbox.id);
     });
 
-    
-
     document.querySelectorAll('.checkbox').forEach(checkbox => checkbox.addEventListener('change', () => {
         updateCouplesCount();
         updateFilesCount();
@@ -341,6 +343,7 @@
     document.querySelector('.update-img').addEventListener('click', () => {
         updateResultField();
         updateLinguaPanels();
+        assignPrintBilingualPDF();
     });
 
     document.querySelectorAll('.result-format').forEach(element => {
@@ -373,15 +376,94 @@
         })
     });
 
-    let lastPagePhrases = ['Больш кніг-білінгв на',
-							'More bilingual books on',
-							'Więcej dwujęzycznych książek na',
-							'Больше книг-билингв на',
-							'Більше книг-білінгв на'];
+    function assignPrintBilingualPDF () {
+        document.querySelectorAll('.result-format-pdf').forEach(element => {
+            element.addEventListener('click', () => {
+                let bookID = document.querySelector('.book-id-input').value;
+                let langs = element.getAttribute('langs');
+                let lang1 = langs.split('-')[0];
+                let lang2 = langs.split('-')[1];
+                
+                let text1 = document.querySelector(`.invisible-input-${lang1}`).innerText;
+                let text2 = document.querySelector(`.invisible-input-${lang2}`).innerText;
+                text1 = text1.replaceAll('<br>', '\n');
+                text2 = text2.replaceAll('<br>', '\n');
+                
+                let mode = element.innerText.slice(element.innerText.lastIndexOf('-') + 1);
+    
+                let coverPath = `${coversDir}/${lang1}.png`;
+                let fileName = `${bookID}_${lang1}_${lang2}_${mode}`;
+    
+                printBilingualPDF(text1, text2,
+                                  lang1, lang2,
+                                  mode, coverPath,
+                                  fileName,
+                                  illustrationsDir);
+            })
+        });
+    }
+    assignPrintBilingualPDF();
+
+    function saveTxt (lang1, lang2) {
+        let bookID = document.querySelector('.book-id-input').value;
+        $.ajax({
+            url: "save_bilingual_formats.php",
+            type: "POST",
+            data: ({format: 'txt',
+                    address1: `books/${bookID}_${lang1}.txt`,
+                    address2: `books/${bookID}_${lang2}.txt`,
+                    outputPath: `books/saved/${bookID}_${lang1}_${lang2}.txt`
+            }),
+            dataType: "html"
+        });
+    }
+
+    function saveFb2 (lang1, lang2) {
+        let bookID = document.querySelector('.book-id-input').value;
+        $.ajax({
+            url: "save_bilingual_formats.php",
+            type: "POST",
+            data: ({format: 'fb2',
+                    address1: `books/${bookID}_${lang1}.txt`,
+                    address2: `books/${bookID}_${lang2}.txt`,
+                    outputPath: `books/saved/${bookID}_${lang1}_${lang2}.fb2`,
+                    coverPath: `${coversDir}/${lang1}.png`,
+                    illustrationsDir: illustrationsDir,
+                    lang1: lang1,
+                    lang2: lang2,
+                    bookID: bookID
+            }),
+            dataType: "html"
+        });
+    }
+
+    function saveEpub (lang1, lang2) {
+        let bookID = document.querySelector('.book-id-input').value;
+        $.ajax({
+            url: "save_bilingual_formats.php",
+            type: "POST",
+            data: ({format: 'epub',
+                    address1: `books/${bookID}_${lang1}.txt`,
+                    address2: `books/${bookID}_${lang2}.txt`,
+                    outputPath: `books/saved/${bookID}_${lang1}_${lang2}.epub`,
+                    coverPath: `${coversDir}/${lang1}.png`,
+                    illustrationsDir: illustrationsDir,
+                    lang1: lang1,
+                    lang2: lang2,
+                    bookID: bookID
+            }),
+            dataType: "html"
+        });
+    }
+
+    function getArticlesArray (lingua) {
+        let articles = document.querySelector('.invisible-input-' + lingua);
+
+        if (articles) {
+            return articles.innerText.split('<br>');
+        } else {
+            return false;
+        }
+    }
 </script>
-<!-- <script type="text/javascript" src="..\b-editor\scripts\lingua_lang.js"></script> -->
-<script type="text/javascript" src="scripts/additional_functions.js"></script>
-<script type="text/javascript" src="scripts/save_txt.js"></script>
-<script type="text/javascript" src="scripts/save_fb2.js"></script>
-<script type="text/javascript" src="scripts/save_epub.js"></script>
 <script type="text/javascript" src="scripts/open_ready_book.js"></script>

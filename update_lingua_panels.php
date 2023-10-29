@@ -8,23 +8,24 @@ foreach($bookFiles as $key => $value) {
     }
 }
 
-$bookIdArray = Array();
+$bookIDArray = Array();
 
 foreach ($bookFiles as $key => $value) {
     $fileName = explode('.txt', $value)[0];
-    $fileBase = explode(' ', $fileName)[0];
-    $fileLingua = substr($fileBase, -3);
-    $fileId = substr($fileBase, 0, -4);
+        $fileBase = explode(' ', $fileName)[0];
+        $lastUnderscoreIndex = strrpos($fileBase, '_');
+        $fileLingua = substr($fileBase, $lastUnderscoreIndex + 1);
+        $fileID = substr($fileBase, 0, strlen($fileBase) - strlen($fileLingua) - 1);
 
-    if (!@$bookIdArray[$fileId]) {
-        $bookIdArray[$fileId] = Array();
+    if (!@$bookIDArray[$fileID]) {
+        $bookIDArray[$fileID] = Array();
     }
 
-    array_push($bookIdArray[$fileId], $fileLingua);
+    array_push($bookIDArray[$fileID], $fileLingua);
 }
 
-$bookLinguasArray = max($bookIdArray);
-$bookId = array_search($bookLinguasArray, $bookIdArray);
+$bookLinguasArray = max($bookIDArray);
+$bookId = array_search($bookLinguasArray, $bookIDArray);
 
 $fileNamesArray = Array();
 foreach($bookFiles as $value) {
@@ -36,7 +37,7 @@ foreach($bookFiles as $value) {
 
 $linguaCoversArray = Array();
 foreach ($bookLinguasArray as $lingua) {
-    if (file_exists($booksPath . '_covers/' . $lingua . '.png')){
+    if (file_exists($booksPath . 'covers/' . $lingua . '.png')){
         $linguaCoversArray[$lingua] = true;
     } else {
         $linguaCoversArray[$lingua] = false;
