@@ -466,4 +466,3 @@
         }
     }
 </script>
-<script type="text/javascript" src="scripts/open_ready_book.js"></script>
