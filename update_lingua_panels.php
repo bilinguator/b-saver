@@ -2,8 +2,8 @@
 
 $booksPath = 'books/';
 $bookFiles = array_diff(scandir($booksPath), ['.', '..']);
-foreach($bookFiles as $key => $value) {
-    if(substr($value, -4) !== '.txt') {
+foreach ($bookFiles as $key => $value) {
+    if (substr($value, -4) !== '.txt') {
         unset($bookFiles[$key]);
     }
 }
@@ -28,9 +28,12 @@ $bookLinguasArray = max($bookIDArray);
 $bookId = array_search($bookLinguasArray, $bookIDArray);
 
 $fileNamesArray = Array();
-foreach($bookFiles as $value) {
-    if(strpos($value, $bookId) !== false) {
-        $lingua = substr(explode($bookId, $value)[1], 1, 3);
+foreach ($bookFiles as $value) {
+    if (strpos($value, $bookId) !== false) {
+        $fileName = explode('.txt', $value)[0];
+        $fileBase = explode(' ', $fileName)[0];
+        $lastUnderscoreIndex = strrpos($fileBase, '_');
+        $lingua = substr($fileBase, $lastUnderscoreIndex + 1);
         $fileNamesArray[$lingua] = $value;
     }
 }

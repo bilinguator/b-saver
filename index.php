@@ -226,6 +226,9 @@
                             formatFunction = 'saveFb2(' + linguasArguments + ');setTimeout(() => {updateFormatStatuses(this)}, 100);';
                         } else if (fileExtension === 'epub') {
                             formatFunction = 'saveEpub(' + linguasArguments + ');setTimeout(() => {updateFormatStatuses(this)}, 100);';
+                        } else if ('pdf') {
+                            let mode = format.split('-')[1];
+                            formatFunction = `savePDF(${linguasArguments}, '${mode}')`;
                         }
 
                         let fullFileName = `${actualFileName}.${fileExtension}`;
@@ -249,6 +252,7 @@
                     resultField.insertAdjacentHTML('beforeend', resultFieldItem);
                 }
             }
+            setSavingByLinguaCouple();
         }
         updateFormatStatuses();
 
@@ -312,7 +316,8 @@
     }
 
     function updateLinguaPanels () {
-        getTextToUpdateLinguaPanels('manifesto_de_prago').then(function() {
+        let bookID = document.querySelector('.book-id-input').value;
+        getTextToUpdateLinguaPanels(bookID).then(function() {
             document.querySelector('.sidebar').insertAdjacentHTML('beforeend', document.querySelector('.invisible-input-general').value)
             setLaunchHover();
             setSavingByLingua();
@@ -321,6 +326,7 @@
             updateCouplesCount();
             updateFilesCount();
             updateResultField();
+            setCheckboxesEventListener();
         });
     }
 
@@ -340,16 +346,20 @@
         getBookContent(linguaCheckbox.id);
     });
 
-    document.querySelectorAll('.checkbox').forEach(checkbox => checkbox.addEventListener('change', () => {
-        updateCouplesCount();
-        updateFilesCount();
-        updateResultField();
-    }));
+    function setCheckboxesEventListener () {
+        document.querySelectorAll('.checkbox').forEach(checkbox => checkbox.addEventListener('change', () => {
+            updateCouplesCount();
+            updateFilesCount();
+            updateResultField();
+            setSavingByLingua();
+            setSavingByLinguaCouple();
+        }));
+    }
+    setCheckboxesEventListener();
 
     document.querySelector('.update-img').addEventListener('click', () => {
         updateResultField();
         updateLinguaPanels();
-        assignPrintBilingualPDF();
     });
 
     document.querySelectorAll('.result-format').forEach(element => {
@@ -366,6 +376,7 @@
 
     function setSavingByLingua () {
         document.querySelectorAll('.lingua-launch').forEach(element => {
+            element = removeAllEventListeners(element);
             element.addEventListener('click', () => {
                 let lingua = element.getAttribute('lingua');
                 document.querySelectorAll('.result-format-' + lingua).forEach(format => {
@@ -378,6 +389,7 @@
 
     function setSavingByLinguaCouple () {
         document.querySelectorAll('.result-field-item-title').forEach(element => {
+            element = removeAllEventListeners(element);
             element.addEventListener('click', () => {
                 let linguasCouple = element.id;
                 document.querySelectorAll('.result-format-' + linguasCouple).forEach(format => {
@@ -387,34 +399,6 @@
         });
     }
     setSavingByLinguaCouple();
-
-    function assignPrintBilingualPDF () {
-        document.querySelectorAll('.result-format-pdf').forEach(element => {
-            element.addEventListener('click', () => {
-                let bookID = document.querySelector('.book-id-input').value;
-                let langs = element.getAttribute('langs');
-                let lang1 = langs.split('-')[0];
-                let lang2 = langs.split('-')[1];
-                
-                let text1 = document.querySelector(`.invisible-input-${lang1}`).innerText;
-                let text2 = document.querySelector(`.invisible-input-${lang2}`).innerText;
-                text1 = text1.replaceAll('<br>', '\n');
-                text2 = text2.replaceAll('<br>', '\n');
-                
-                let mode = element.innerText.slice(element.innerText.lastIndexOf('-') + 1);
-    
-                let coverPath = `${coversDir}/${lang1}.png`;
-                let fileName = `${bookID}_${lang1}_${lang2}_${mode}`;
-    
-                printBilingualPDF(text1, text2,
-                                  lang1, lang2,
-                                  mode, coverPath,
-                                  fileName,
-                                  illustrationsDir);
-            })
-        });
-    }
-    assignPrintBilingualPDF();
 
     function saveTxt (lang1, lang2) {
         let bookID = document.querySelector('.book-id-input').value;
@@ -468,6 +452,24 @@
         });
     }
 
+    function savePDF (lang1, lang2, mode) {
+        let bookID = document.querySelector('.book-id-input').value;
+        
+        let text1 = document.querySelector(`.invisible-input-${lang1}`).innerText;
+        let text2 = document.querySelector(`.invisible-input-${lang2}`).innerText;
+        text1 = text1.replaceAll('<br>', '\n');
+        text2 = text2.replaceAll('<br>', '\n');
+
+        let coverPath = `${coversDir}/${lang1}.png`;
+        let fileName = `${bookID}_${lang1}_${lang2}_${mode}`;
+
+        printBilingualPDF(text1, text2,
+                            lang1, lang2,
+                            mode, coverPath,
+                            fileName,
+                            illustrationsDir);
+    }
+
     function getArticlesArray (lingua) {
         let articles = document.querySelector('.invisible-input-' + lingua);
 
@@ -476,5 +478,11 @@
         } else {
             return false;
         }
+    }
+
+    function removeAllEventListeners (element) {
+        clonedElement = element.cloneNode(true);
+        element.parentNode.replaceChild(clonedElement, element);
+        return clonedElement;
     }
 </script>
