@@ -112,7 +112,7 @@
                         <img class="cover-img" <?=$cover?>>
                         <p class="cover-message"><?=$coverMessage?></p>
                     </div>
-                    <img src="img/launch.svg" alt="Launch" class="launch lingua-launch" id="<?=$lingua?>">
+                    <img src="img/launch.svg" alt="Launch" class="launch lingua-launch" lingua="<?=$lingua?>">
                 </div>
             <?php
                 endforeach;
@@ -315,6 +315,12 @@
         getTextToUpdateLinguaPanels('manifesto_de_prago').then(function() {
             document.querySelector('.sidebar').insertAdjacentHTML('beforeend', document.querySelector('.invisible-input-general').value)
             setLaunchHover();
+            setSavingByLingua();
+            setSavingByLinguaCouple();
+            updateLinguasCount();
+            updateCouplesCount();
+            updateFilesCount();
+            updateResultField();
         });
     }
 
@@ -358,23 +364,29 @@
         });
     });
 
-    document.querySelectorAll('.lingua-launch').forEach(element => {
-        element.addEventListener('click', () => {
-            let lingua = element.id;
-            document.querySelectorAll('.result-format-' + lingua).forEach(format => {
-                format.click();
-            });
-        })
-    });
+    function setSavingByLingua () {
+        document.querySelectorAll('.lingua-launch').forEach(element => {
+            element.addEventListener('click', () => {
+                let lingua = element.getAttribute('lingua');
+                document.querySelectorAll('.result-format-' + lingua).forEach(format => {
+                    format.click();
+                });
+            })
+        });
+    }
+    setSavingByLingua();
 
-    document.querySelectorAll('.result-field-item-title').forEach(element => {
-        element.addEventListener('click', () => {
-            let linguasCouple = element.id;
-            document.querySelectorAll('.result-format-' + linguasCouple).forEach(format => {
-                format.click();
-            });
-        })
-    });
+    function setSavingByLinguaCouple () {
+        document.querySelectorAll('.result-field-item-title').forEach(element => {
+            element.addEventListener('click', () => {
+                let linguasCouple = element.id;
+                document.querySelectorAll('.result-format-' + linguasCouple).forEach(format => {
+                    format.click();
+                });
+            })
+        });
+    }
+    setSavingByLinguaCouple();
 
     function assignPrintBilingualPDF () {
         document.querySelectorAll('.result-format-pdf').forEach(element => {

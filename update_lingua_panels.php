@@ -57,7 +57,7 @@ foreach($linguaCoversArray as $lingua => $isCover):
             <img class="cover-img" <?=$cover?>>
             <p class="cover-message"><?=$coverMessage?></p>
         </div>
-        <img src="img/launch.svg" alt="Launch" class="launch lingua-launch">
+        <img src="img/launch.svg" alt="Launch" class="launch lingua-launch" lingua="<?=$lingua?>">
     </div>
 <?php
     endforeach;
