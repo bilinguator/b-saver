@@ -1,12 +1,10 @@
 ::-webkit-scrollbar {
     width: 7px;
+    height: 7px;
 }
 
 ::-webkit-scrollbar-thumb {
     background-color: #009644;
-}
-
-::-webkit-scrollbar-thumb {
     border-radius: 9px;
 }
 
@@ -27,9 +25,8 @@ body {
     display: flex;
     flex-direction: column;
     align-items: center;
-    padding-top: 40px;
-    width: 50%;
-    min-width: 500px;
+    padding: 40px 0px;
+    width: 550px;
     height: 100%;
     overflow-y: scroll;
     font-family: 'Open Sans', 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
@@ -48,7 +45,7 @@ body {
 
 .panel {
     background-color: #96E2A4;
-    width: 55%;
+    width: 390px;
     border-radius: 3px;
     padding: 5px 15px;
     margin-bottom: 15px;
@@ -66,7 +63,7 @@ body {
 
 .subpanel-book-id {
     padding-top: 5px;
-    padding-bottom: 10px;
+    padding-bottom: 20px;
 }
 
 .book-id-label {
@@ -81,7 +78,6 @@ body {
 }
 
 .subpanel-formats-checkboxes {
-    padding: 0 5%;
     margin-bottom: 15px;
 }
 
@@ -162,7 +158,7 @@ body {
     flex-grow: 1;
     height: 100%;
     width: 50%;
-    padding: 40px 90px 40px 60px;
+    padding: 40px 90px 40px 30px;
     font-family: monospace;
     font-size: 13px;
     font-weight: 700;
@@ -172,7 +168,6 @@ body {
 .result-field-item {
     display: flex;
     justify-content: space-between;
-    width: 90%;
     margin: 7px 0;
 }
 
@@ -187,6 +182,7 @@ body {
 
 .result-field-item-formats {
     display: inline-flex;
+    min-width: 300px;
 }
 
 .result-format {
@@ -198,6 +194,7 @@ body {
     cursor: pointer;
     margin: 0 3px;
     transition: 0.4s all;
+    max-height: 30px;
 }
 
 .result-format:hover {

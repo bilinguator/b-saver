@@ -384,6 +384,7 @@
                 });
             })
         });
+        setLaunchHover();
     }
     setSavingByLingua();
 
